@@ -18,22 +18,22 @@ ARL_HELP = """**Oops, Time to Help Yourself**
 After getting Arl token Config `ARL_TOKEN` var in heroku"""
 
 
-@userge.on_cmd("deezload", about={
+@userge.on_cmd("dl", about={
     'header': "DeezLoader for Userge",
     'description': "Download Songs/Albums/Playlists via "
                    "Sopitfy or Deezer Links. "
                    "\n<b>NOTE:</b> Music Quality is optional",
-    'flags': {'-sdl': "Download via Spotify Link",
-              '-ddl': "Download via Deezers Link",
-              '-dsong': "Download a Song by passing Artist Name and Song Name",
+    'flags': {'-spotify': "Download via Spotify Link",
+              '-deezer': "Download via Deezers Link",
+              '-song': "Download a Song by passing Artist Name and Song Name",
               '-zip': "Get a zip archive for Albums/Playlist Download"},
     'options': "Available Sound Quality: <code>FLAC | MP3_320 | MP3_256 | MP3_128</code>",
     'usage': "{tr}deezload [flag] [link | quality (default MP3_320)]",
-    'examples': "{tr}deezload -ddl https://www.deezer.com/track/142750222 \n"
-                "{tr}deezload -ddl https://www.deezer.com/track/3824710 FLAC \n"
-                "{tr}deezload -ddl https://www.deezer.com/album/1240787 FLAC \n"
-                "{tr}deezload -ddl -zip https://www.deezer.com/album/1240787 \n"
-                "{tr}deezload -dsong Ed Sheeran-Shape of You"})
+    'examples': "{tr}deezload -deezer https://www.deezer.com/track/142750222 \n"
+                "{tr}deezload -deezer https://www.deezer.com/track/3824710 FLAC \n"
+                "{tr}deezload -deezer https://www.deezer.com/album/1240787 FLAC \n"
+                "{tr}deezload -deezer -zip https://www.deezer.com/album/1240787 \n"
+                "{tr}deezload -song Ed Sheeran-Shape of You"})
 async def deezload(message: Message):
     if not os.path.exists(TEMP_PATH):
         os.makedirs(TEMP_PATH)
@@ -61,7 +61,7 @@ async def deezload(message: Message):
         await message.edit("Olá Peru Master🙂, Tell me how to download `Nothing`")
         return
     input_ = message.filtered_input_str
-    if '-dsong' not in flags:
+    if '-song' not in flags:
         try:
             input_link, quality = input_.split()
         except ValueError:
@@ -74,7 +74,7 @@ async def deezload(message: Message):
         if not re.search(rex, input_link):
             await message.edit("As per my Blek Mejik Regex, this link is not supported.")
             return
-    elif '-dsong' in flags:
+    elif '-song' in flags:
         try:
             artist, song, quality = input_.split('-')
         except ValueError:
@@ -85,12 +85,12 @@ async def deezload(message: Message):
                 await message.edit("🙂K!!")
                 return
     try:
-        if '-sdl' in flags:
+        if '-spotify' in flags:
             if 'track/' in input_link:
                 await proper_trackdl(input_link, quality, message, loader, TEMP_PATH)
             elif 'album/' or 'playlist/' in input_link:
                 await batch_dl(input_link, quality, message, loader, TEMP_PATH, to_zip)
-        elif '-ddl' in flags:
+        elif '-deezer' in flags:
             if 'track/' in input_link:
                 await proper_trackdl(input_link, quality, message, loader, TEMP_PATH)
             elif 'album/' or 'playlist/' in input_link:
@@ -101,7 +101,7 @@ async def deezload(message: Message):
     except Exception as e_r:
         await Clogger.log(f"#ERROR\n\n{e_r}")
 
-    if '-dsong' in flags:
+    if '-song' in flags:
         await message.edit(f"Searching Results for {song}")
         try:
             track = await pool.run_in_thread(loader.download_name)(
